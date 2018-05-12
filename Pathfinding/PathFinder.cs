@@ -1,13 +1,4 @@
-﻿#region File Description
-//-----------------------------------------------------------------------------
-// PathFinder.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using Statements
+﻿#region Using Statements
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -34,6 +25,7 @@ namespace Pathfinding
         BreadthFirst,
         BestFirst,
         AStar,
+        DepthFirst,
         Max,
     }
     #endregion
@@ -100,6 +92,11 @@ namespace Pathfinding
         private Map map;
         // Seconds per search step        
         public float timeStep = .5f;
+
+        //depth first
+        private SearchNode lastVisitedNode;
+        private Stack<SearchNode> openStack;
+        private Stack<SearchNode> closedStack;
 
         #endregion
 
@@ -337,6 +334,29 @@ namespace Pathfinding
                     case SearchMethodEnum.BreadthFirst:
                         totalSearchSteps++;
                         result = openList[0];
+                        success = true;
+                        break;
+                    //Depth first search traverses the search tree until it finds a leaf node
+                    // If the leafnode is the goal it terminates
+                    case SearchMethodEnum.DepthFirst:
+                        totalSearchSteps++;
+                        openStack = new Stack<SearchNode>(openList);
+                        closedStack = new Stack<SearchNode>(closedList);
+                        var distanceTraveled = 0;
+                        if(closedList.Count > 0) lastVisitedNode = closedStack.Peek();
+                        foreach(SearchNode node in openStack)
+                        {
+                            distanceTraveled = node.DistanceTraveled;
+                            if (distanceTraveled > lastVisitedNode.DistanceTraveled)
+                            {
+                                result = node;
+                                break;
+                            }
+                        }
+                        if (lastVisitedNode.DistanceTraveled > distanceTraveled)
+                        {
+                            result = openStack.Pop();
+                        }
                         success = true;
                         break;
                     // Best first search always looks at whatever path is closest to

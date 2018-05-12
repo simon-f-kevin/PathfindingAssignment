@@ -353,59 +353,7 @@ namespace Pathfinding
 
             pathFinder.TimeStep = MathHelper.Clamp(pathFinder.TimeStep, 0f, 1f);
 
-            TouchCollection rawTouch = TouchPanel.GetState();
-
-            // Use raw touch for the sliders
-            if (rawTouch.Count > 0)
-            {
-                // Only grab the first one
-                TouchLocation touchLocation = rawTouch[0];
-
-                // Create a collidable rectangle to determine if we touched the controls
-                Rectangle touchRectangle = new Rectangle((int)touchLocation.Position.X,
-                                                         (int)touchLocation.Position.Y, 10, 10);
-
-                // Have the sliders rely on the raw touch to function properly
-                if (barTimeStep.Intersects(touchRectangle))
-                {
-                    pathFinder.TimeStep = (float)(touchRectangle.X - barTimeStep.X) / (float)barTimeStep.Width;
-                }
-            }
-
-            // Next we handle all of the gestures. since we may have multiple gestures available,
-            // we use a loop to read in all of the gestures. this is important to make sure the 
-            // TouchPanel's queue doesn't get backed up with old data
-            while (TouchPanel.IsGestureAvailable)
-            {
-                // Read the next gesture from the queue
-                GestureSample gesture = TouchPanel.ReadGesture();
-
-                // Create a collidable rectangle to determine if we touched the controls
-                Rectangle touch = new Rectangle((int)gesture.Position.X, (int)gesture.Position.Y, 20, 20);
-
-                // We can use the type of gesture to determine our behavior
-                switch (gesture.GestureType)
-                {
-                    case GestureType.Tap:
-                        if (buttonStartStop.Intersects(touch))
-                        {
-                            pathFinder.IsSearching = !pathFinder.IsSearching;
-                        }
-                        else if (buttonReset.Intersects(touch))
-                        {
-                            map.MapReload = true;
-                        }
-                        else if (buttonPathfinding.Intersects(touch))
-                        {
-                            pathFinder.NextSearchType();
-                        }
-                        else if (buttonNextMap.Intersects(touch))
-                        {
-                            map.CycleMap();
-                        }
-                        break;
-                }
-            }
+            
         }
         #endregion
     }

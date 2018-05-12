@@ -8,12 +8,8 @@
 #endregion
 
 #region Using Statements
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
 #endregion
 
 namespace PathfinderData
@@ -30,9 +26,7 @@ namespace PathfinderData
         {
         }
 
-        public MapData(
-            int columns, int rows, Point startPosition,
-            Point endPosition, List<Point> barriersList)
+        public MapData(int columns, int rows, Point startPosition,Point endPosition, List<Point> barriersList)
         {
             NumberColumns = columns;
             NumberRows = rows;
