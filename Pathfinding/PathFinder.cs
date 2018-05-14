@@ -97,6 +97,8 @@ namespace Pathfinding
         private SearchNode lastVisitedNode;
         private Stack<SearchNode> openStack;
         private Stack<SearchNode> closedStack;
+        private Point startPosition;
+        
 
         #endregion
 
@@ -247,6 +249,7 @@ namespace Pathfinding
             openList.Add(new SearchNode(map.StartTile,
                 Map.StepDistance(map.StartTile, map.EndTile)
                 , 0));
+            startPosition = map.StartTile;
         }
 
         /// <summary>
@@ -337,26 +340,33 @@ namespace Pathfinding
                         success = true;
                         break;
                     //Depth first search traverses the search tree until it finds a leaf node
-                    // If the leafnode is the goal it terminates
+                    //If the leafnode is the goal it terminates
                     case SearchMethodEnum.DepthFirst:
                         totalSearchSteps++;
                         openStack = new Stack<SearchNode>(openList);
                         closedStack = new Stack<SearchNode>(closedList);
-                        var distanceTraveled = 0;
+                            var euqlidDistanceTraveled = 0;
+                        var realDistanceTraveled = 0;
+                        var xdistance = 0;
+                        var ydistance = 0;
                         if(closedList.Count > 0) lastVisitedNode = closedStack.Peek();
                         foreach(SearchNode node in openStack)
                         {
-                            distanceTraveled = node.DistanceTraveled;
-                            if (distanceTraveled > lastVisitedNode.DistanceTraveled)
+                            euqlidDistanceTraveled = ((startPosition.X - node.Position.X) * (startPosition.X - node.Position.X))
+                                + ((startPosition.Y-node.Position.Y)*(startPosition.Y-node.Position.Y));
+                            realDistanceTraveled = openStack.Count;
+                            xdistance = node.Position.X;
+                            ydistance = node.Position.Y;
+                            if (ydistance > lastVisitedNode.Position.Y)
                             {
                                 result = node;
                                 break;
                             }
                         }
-                        if (lastVisitedNode.DistanceTraveled > distanceTraveled)
-                        {
-                            result = openStack.Pop();
-                        }
+                        //if (lastVisitedNode.DistanceTraveled > euqlidDistanceTraveled)
+                        //{
+                        //    result = openStack.Pop();
+                        //}
                         success = true;
                         break;
                     // Best first search always looks at whatever path is closest to
