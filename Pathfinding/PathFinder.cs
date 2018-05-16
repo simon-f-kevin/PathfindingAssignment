@@ -96,6 +96,7 @@ namespace Pathfinding
 
         //depth first
         private SearchNode lastVisitedNode;
+        private SearchNode currentFurthestNode;
         private Stack<SearchNode> openStack;
         private Stack<SearchNode> closedStack;
         private Stack<SearchNode> visitedNodesStack;
@@ -348,9 +349,9 @@ namespace Pathfinding
                         result = openList[0];
                         success = true;
                         break;
-                    //Depth first search traverses the search tree until it finds a leaf node
-                    //It wants to go move as far away from the start as quick as possible
-                    //If the leafnode is the goal it terminates
+                    //Depth first search traveses the tree by always going to the first childnode that is further
+                    //away from the parent node. If a wall is hit, it will backtrack to the last visited node.
+                    //Depending on if you chose first matching or furthest away node we get different paths
                     case SearchMethodEnum.DepthFirst:
                         totalSearchSteps++;
                         openStack = new Stack<SearchNode>(openList);
@@ -359,10 +360,8 @@ namespace Pathfinding
                         var realDistanceTraveled = 0;
                         var xdistance = 0;
                         var ydistance = 0;
-                        var currentDistanceTraveled = 0;
                         if (closedStack.Count > 0 && visitedNodesStack.Count > 0)
                         {
-                            //lastVisitedNode = closedStack.Peek();
                             lastVisitedNode = visitedNodesStack.Peek();
                         }
                         else
@@ -371,29 +370,30 @@ namespace Pathfinding
                         }
                         foreach(SearchNode node in openStack)
                         {
-                            euqlidDistanceTraveled = ((startPosition.X - node.Position.X) * (startPosition.X - node.Position.X)
-                                + ((startPosition.Y-node.Position.Y)*(startPosition.Y-node.Position.Y)));
-                            realDistanceTraveled = visitedNodesStack.Count;
-                            currentDistanceTraveled = node.DistanceTraveled;
-                            xdistance = node.Position.X;
-                            ydistance = node.Position.Y;
-                            if (currentDistanceTraveled > lastVisitedNode.DistanceTraveled)
+                            currentDistance = node.DistanceTraveled;
+                            if (currentDistance > lastVisitedNode.DistanceTraveled)
                             {
                                 visitedNodesStack.Push(node);
-                                result = node;
-                                break;
+                                currentFurthestNode = node;
+                                //result = node;
+                                //break;
                             }
                         }
-                        if (currentDistanceTraveled <= lastVisitedNode.DistanceTraveled)
+                        if (currentDistance <= lastVisitedNode.DistanceTraveled)
                         {
+                            if (visitedNodesStack.Count == 0)
+                            {
+                                visitedNodesStack.Push(lastVisitedNode);
+                            }
                             if (visitedNodesStack.Count > 1)
                             {
-                                visitedNodesStack.Pop();
+                                lastVisitedNode = visitedNodesStack.Pop();
                             }
 
-                            result = lastVisitedNode;
-                            //visitedNodesStack.Push(result);
+                            currentFurthestNode = lastVisitedNode;
+                            //result = lastVisitedNode;
                         }
+                        result = currentFurthestNode;
                         success = true;
                         break;
                     // Best first search always looks at whatever path is closest to
