@@ -1,6 +1,7 @@
 ﻿#region Using Statements
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -97,6 +98,7 @@ namespace Pathfinding
         private SearchNode lastVisitedNode;
         private Stack<SearchNode> openStack;
         private Stack<SearchNode> closedStack;
+        private Stack<SearchNode> visitedNodesStack;
         private Point startPosition;
         
 
@@ -175,6 +177,9 @@ namespace Pathfinding
             closedList = new List<SearchNode>();
             paths = new Dictionary<Point, Point>();
             map = mazeMap;
+
+            //for depth first
+            visitedNodesStack = new Stack<SearchNode>();
         }
 
         /// <summary>
@@ -250,6 +255,10 @@ namespace Pathfinding
                 Map.StepDistance(map.StartTile, map.EndTile)
                 , 0));
             startPosition = map.StartTile;
+
+            visitedNodesStack.Clear();
+            //openStack.Clear();
+            //closedStack.Clear();
         }
 
         /// <summary>
@@ -340,33 +349,51 @@ namespace Pathfinding
                         success = true;
                         break;
                     //Depth first search traverses the search tree until it finds a leaf node
+                    //It wants to go move as far away from the start as quick as possible
                     //If the leafnode is the goal it terminates
                     case SearchMethodEnum.DepthFirst:
                         totalSearchSteps++;
                         openStack = new Stack<SearchNode>(openList);
                         closedStack = new Stack<SearchNode>(closedList);
-                            var euqlidDistanceTraveled = 0;
+                        var euqlidDistanceTraveled = 0;
                         var realDistanceTraveled = 0;
                         var xdistance = 0;
                         var ydistance = 0;
-                        if(closedList.Count > 0) lastVisitedNode = closedStack.Peek();
+                        var currentDistanceTraveled = 0;
+                        if (closedStack.Count > 0 && visitedNodesStack.Count > 0)
+                        {
+                            //lastVisitedNode = closedStack.Peek();
+                            lastVisitedNode = visitedNodesStack.Peek();
+                        }
+                        else
+                        {
+                            lastVisitedNode = new SearchNode(startPosition, Map.StepDistance(map.StartTile, map.EndTile), 0);
+                        }
                         foreach(SearchNode node in openStack)
                         {
-                            euqlidDistanceTraveled = ((startPosition.X - node.Position.X) * (startPosition.X - node.Position.X))
-                                + ((startPosition.Y-node.Position.Y)*(startPosition.Y-node.Position.Y));
-                            realDistanceTraveled = openStack.Count;
+                            euqlidDistanceTraveled = ((startPosition.X - node.Position.X) * (startPosition.X - node.Position.X)
+                                + ((startPosition.Y-node.Position.Y)*(startPosition.Y-node.Position.Y)));
+                            realDistanceTraveled = visitedNodesStack.Count;
+                            currentDistanceTraveled = node.DistanceTraveled;
                             xdistance = node.Position.X;
                             ydistance = node.Position.Y;
-                            if (ydistance > lastVisitedNode.Position.Y)
+                            if (currentDistanceTraveled > lastVisitedNode.DistanceTraveled)
                             {
+                                visitedNodesStack.Push(node);
                                 result = node;
                                 break;
                             }
                         }
-                        //if (lastVisitedNode.DistanceTraveled > euqlidDistanceTraveled)
-                        //{
-                        //    result = openStack.Pop();
-                        //}
+                        if (currentDistanceTraveled <= lastVisitedNode.DistanceTraveled)
+                        {
+                            if (visitedNodesStack.Count > 1)
+                            {
+                                visitedNodesStack.Pop();
+                            }
+
+                            result = lastVisitedNode;
+                            //visitedNodesStack.Push(result);
+                        }
                         success = true;
                         break;
                     // Best first search always looks at whatever path is closest to
