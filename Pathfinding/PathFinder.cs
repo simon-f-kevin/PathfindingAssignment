@@ -256,10 +256,7 @@ namespace Pathfinding
                 Map.StepDistance(map.StartTile, map.EndTile)
                 , 0));
             startPosition = map.StartTile;
-
             visitedNodesStack.Clear();
-            //openStack.Clear();
-            //closedStack.Clear();
         }
 
         /// <summary>
@@ -350,17 +347,12 @@ namespace Pathfinding
                         success = true;
                         break;
                     //Depth first search traveses the tree by always going to the first childnode that is further
-                    //away from the parent node. If a wall is hit, it will backtrack to the last visited node.
-                    //Depending on if you chose first matching or furthest away node we get different paths
+                    //away from the parent node. If a wall is hit or childnode is not further away than current node
+                    //it will backtrack to the last visited node.
                     case SearchMethodEnum.DepthFirst:
                         totalSearchSteps++;
                         openStack = new Stack<SearchNode>(openList);
-                        closedStack = new Stack<SearchNode>(closedList);
-                        var euqlidDistanceTraveled = 0;
-                        var realDistanceTraveled = 0;
-                        var xdistance = 0;
-                        var ydistance = 0;
-                        if (closedStack.Count > 0 && visitedNodesStack.Count > 0)
+                        if(visitedNodesStack.Count > 0)
                         {
                             lastVisitedNode = visitedNodesStack.Peek();
                         }
@@ -374,9 +366,8 @@ namespace Pathfinding
                             if (currentDistance > lastVisitedNode.DistanceTraveled)
                             {
                                 visitedNodesStack.Push(node);
-                                currentFurthestNode = node;
-                                //result = node;
-                                //break;
+                                result = node;
+                                break;
                             }
                         }
                         if (currentDistance <= lastVisitedNode.DistanceTraveled)
@@ -389,11 +380,8 @@ namespace Pathfinding
                             {
                                 lastVisitedNode = visitedNodesStack.Pop();
                             }
-
-                            currentFurthestNode = lastVisitedNode;
-                            //result = lastVisitedNode;
+                            result = lastVisitedNode;
                         }
-                        result = currentFurthestNode;
                         success = true;
                         break;
                     // Best first search always looks at whatever path is closest to
